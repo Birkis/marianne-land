@@ -28,6 +28,21 @@ const TRIPS_QUERY = `*[_type == "trip"] | order(departureDate desc) {
 	tagline,
 	departureDate,
 	returnDate,
+	"flights": flights[] {
+		"id": _key,
+		direction,
+		airline,
+		flightNumber,
+		date,
+		departureAirport,
+		departureTime,
+		arrivalAirport,
+		arrivalTime,
+		terminal,
+		gate,
+		bookingReference,
+		seatInfo
+	},
 	"surprises": surprises[] {
 		"id": _key,
 		unlockDate,
@@ -47,6 +62,21 @@ const TRIP_BY_SLUG_QUERY = `*[_type == "trip" && slug.current == $slug][0] {
 	tagline,
 	departureDate,
 	returnDate,
+	"flights": flights[] {
+		"id": _key,
+		direction,
+		airline,
+		flightNumber,
+		date,
+		departureAirport,
+		departureTime,
+		arrivalAirport,
+		arrivalTime,
+		terminal,
+		gate,
+		bookingReference,
+		seatInfo
+	},
 	"surprises": surprises[] {
 		"id": _key,
 		unlockDate,

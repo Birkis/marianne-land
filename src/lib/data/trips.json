@@ -7,6 +7,34 @@
 			"tagline": "En helg i storbyen",
 			"departureDate": "2026-02-27",
 			"returnDate": "2026-03-01",
+			"flights": [
+				{
+					"id": "flight-out",
+					"direction": "outbound",
+					"airline": "Norwegian",
+					"flightNumber": "DY1302",
+					"date": "2026-02-27",
+					"departureAirport": "OSL",
+					"departureTime": "07:15",
+					"arrivalAirport": "LGW",
+					"arrivalTime": "09:05",
+					"terminal": "S",
+					"bookingReference": "ABC123"
+				},
+				{
+					"id": "flight-ret",
+					"direction": "return",
+					"airline": "Norwegian",
+					"flightNumber": "DY1303",
+					"date": "2026-03-01",
+					"departureAirport": "LGW",
+					"departureTime": "17:30",
+					"arrivalAirport": "OSL",
+					"arrivalTime": "21:10",
+					"terminal": "S",
+					"bookingReference": "ABC123"
+				}
+			],
 			"surprises": [
 				{
 					"id": 1,

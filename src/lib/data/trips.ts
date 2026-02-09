@@ -9,6 +9,22 @@ export interface Surprise {
 	icon: string;
 }
 
+export interface FlightInfo {
+	id: string;
+	direction: 'outbound' | 'return';
+	airline: string;
+	flightNumber: string;
+	date: string;
+	departureAirport: string;
+	departureTime: string;
+	arrivalAirport: string;
+	arrivalTime: string;
+	terminal?: string;
+	gate?: string;
+	bookingReference?: string;
+	seatInfo?: string;
+}
+
 export interface Trip {
 	_id?: string;
 	slug: string;
@@ -17,6 +33,7 @@ export interface Trip {
 	tagline: string;
 	departureDate: string;
 	returnDate: string;
+	flights?: FlightInfo[];
 	surprises: Surprise[];
 	photos?: string[];
 }

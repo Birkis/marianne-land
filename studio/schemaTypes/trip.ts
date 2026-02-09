@@ -42,6 +42,12 @@ export const trip = defineType({
 			validation: (rule) => rule.required()
 		}),
 		defineField({
+			name: 'flights',
+			title: 'Flyreiser',
+			type: 'array',
+			of: [{ type: 'flightInfo' }]
+		}),
+		defineField({
 			name: 'surprises',
 			title: 'Overraskelser',
 			type: 'array',

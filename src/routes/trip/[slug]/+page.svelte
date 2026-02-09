@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import Countdown from '$lib/components/Countdown.svelte';
 	import DayTimeline from '$lib/components/DayTimeline.svelte';
+	import FlightCard from '$lib/components/FlightCard.svelte';
 	import ImageGrid from '$lib/components/ImageGrid.svelte';
 	import { isTripActive, isTripUpcoming, isTripPast, formatDateShort } from '$lib/data/trips';
 
@@ -11,6 +12,14 @@
 	let active = $derived(isTripActive(trip));
 	let upcoming = $derived(isTripUpcoming(trip));
 	let past = $derived(isTripPast(trip));
+
+	let sortedFlights = $derived(
+		[...(trip.flights ?? [])].sort((a, b) => {
+			if (a.direction === 'outbound' && b.direction === 'return') return -1;
+			if (a.direction === 'return' && b.direction === 'outbound') return 1;
+			return a.date.localeCompare(b.date);
+		})
+	);
 
 	let uploading = $state(false);
 	let fileInput: HTMLInputElement | undefined = $state();
@@ -68,6 +77,18 @@
 			<div class="mb-2 text-4xl">💕</div>
 			<p class="font-display text-lg font-bold text-plum">For en tur!</p>
 			<p class="text-plum/50 mt-1 text-sm">Gjenopplev overraskelsene nedenfor</p>
+		</section>
+	{/if}
+
+	<!-- Travel info -->
+	{#if sortedFlights.length > 0}
+		<section class="space-y-3">
+			<h2 class="font-display text-xl font-bold text-plum">
+				Reisedetaljer
+			</h2>
+			{#each sortedFlights as flight (flight.id)}
+				<FlightCard {flight} />
+			{/each}
 		</section>
 	{/if}
 
