@@ -1,14 +1,19 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
 	import Countdown from '$lib/components/Countdown.svelte';
 	import DayTimeline from '$lib/components/DayTimeline.svelte';
+	import ImageGrid from '$lib/components/ImageGrid.svelte';
 	import { isTripActive, isTripUpcoming, isTripPast, formatDateShort } from '$lib/data/trips';
 
-	let { data } = $props();
+	let { data, form } = $props();
 
 	let trip = $derived(data.trip);
 	let active = $derived(isTripActive(trip));
 	let upcoming = $derived(isTripUpcoming(trip));
 	let past = $derived(isTripPast(trip));
+
+	let uploading = $state(false);
+	let fileInput: HTMLInputElement | undefined = $state();
 </script>
 
 <svelte:head>
@@ -80,4 +85,64 @@
 
 		<DayTimeline {trip} />
 	</section>
+
+	<!-- Photos section (active or past trips only) -->
+	{#if active || past}
+		<section class="space-y-4">
+			<h2 class="font-display text-xl font-bold text-plum">
+				Bilder
+			</h2>
+
+			{#if trip.photos && trip.photos.length > 0}
+				<ImageGrid photos={trip.photos} />
+			{:else}
+				<p class="text-plum/40 text-sm italic">Ingen bilder lagt til ennå.</p>
+			{/if}
+
+			<!-- Upload form -->
+			<form
+				method="POST"
+				action="?/upload"
+				enctype="multipart/form-data"
+				use:enhance={() => {
+					uploading = true;
+					return async ({ update }) => {
+						await update();
+						uploading = false;
+						if (fileInput) fileInput.value = '';
+					};
+				}}
+			>
+				<input
+					bind:this={fileInput}
+					type="file"
+					name="photos"
+					accept="image/*"
+					multiple
+					class="hidden"
+					id="photo-upload"
+					onchange={(e) => e.currentTarget.form?.requestSubmit()}
+				/>
+
+				<button
+					type="button"
+					disabled={uploading}
+					onclick={() => fileInput?.click()}
+					class="inline-flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-pink/30 bg-white/50 px-5 py-4 text-sm font-semibold text-plum/60 transition-all hover:border-pink/50 hover:bg-white hover:text-plum active:scale-[0.98] disabled:opacity-50"
+				>
+					{#if uploading}
+						<span class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-pink border-t-transparent"></span>
+						Laster opp...
+					{:else}
+						<span aria-hidden="true">📷</span>
+						Legg til bilder
+					{/if}
+				</button>
+			</form>
+
+			{#if form?.error}
+				<p class="text-center text-sm text-rose">{form.error}</p>
+			{/if}
+		</section>
+	{/if}
 </div>

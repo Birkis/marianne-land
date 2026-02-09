@@ -10,6 +10,7 @@ export interface Surprise {
 }
 
 export interface Trip {
+	_id?: string;
 	slug: string;
 	destination: string;
 	emoji: string;
@@ -17,6 +18,7 @@ export interface Trip {
 	departureDate: string;
 	returnDate: string;
 	surprises: Surprise[];
+	photos?: string[];
 }
 
 function toDateOnly(dateStr: string): Date {
