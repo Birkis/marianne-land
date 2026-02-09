@@ -75,6 +75,15 @@ export function getUpcomingTrip(): Trip | undefined {
 	return upcoming[0];
 }
 
+export function getUpcomingTrips(): Trip[] {
+	const today = todayDateOnly();
+	return getAllTrips()
+		.filter((trip) => toDateOnly(trip.departureDate) > today)
+		.sort(
+			(a, b) => toDateOnly(a.departureDate).getTime() - toDateOnly(b.departureDate).getTime()
+		);
+}
+
 export function getPastTrips(): Trip[] {
 	const today = todayDateOnly();
 	return getAllTrips()

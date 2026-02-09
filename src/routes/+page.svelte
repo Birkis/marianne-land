@@ -66,6 +66,22 @@
 		</section>
 	{/if}
 
+	<!-- Upcoming trips (excluding the featured one) -->
+	{#each [data.upcoming.filter((t) => t.slug !== data.featured?.slug)] as otherUpcoming, i (i)}
+		{#if otherUpcoming.length > 0}
+			<section>
+				<h2 class="font-display mb-4 text-lg font-bold text-plum/70">
+					Kommende eventyr
+				</h2>
+				<div class="grid gap-3">
+					{#each otherUpcoming as trip (trip.slug)}
+						<TripCard {trip} />
+					{/each}
+				</div>
+			</section>
+		{/if}
+	{/each}
+
 	<!-- Past trips -->
 	{#if data.past.length > 0}
 		<section>

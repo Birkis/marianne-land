@@ -1,16 +1,16 @@
-import { getFeaturedTrip, getPastTrips, getAllTrips } from '$lib/server/trips';
+import { getFeaturedTrip, getUpcomingTrips, getPastTrips } from '$lib/server/trips';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
-	const [featured, past, all] = await Promise.all([
+	const [featured, upcoming, past] = await Promise.all([
 		getFeaturedTrip(),
-		getPastTrips(),
-		getAllTrips()
+		getUpcomingTrips(),
+		getPastTrips()
 	]);
 
 	return {
 		featured,
-		past,
-		totalTrips: all.length
+		upcoming,
+		past
 	};
 };

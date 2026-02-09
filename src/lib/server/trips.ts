@@ -3,7 +3,8 @@ import {
 	getAllTrips as getAllTripsLocal,
 	getTripBySlug as getTripBySlugLocal,
 	getFeaturedTrip as getFeaturedTripLocal,
-	getPastTrips as getPastTripsLocal
+	getPastTrips as getPastTripsLocal,
+	getUpcomingTrips as getUpcomingTripsLocal
 } from '$lib/data/trips';
 import type { Trip } from '$lib/data/trips';
 
@@ -21,7 +22,7 @@ function isSanityConfigured(): boolean {
 
 // --- GROQ queries ---
 
-const TRIPS_QUERY = `*[_type == "trip"] | order(departureDate desc) {
+const TRIPS_QUERY = `*[_type == "trip" && !(_id in path("drafts.**"))] | order(departureDate desc) {
 	"slug": slug.current,
 	destination,
 	emoji,
@@ -54,7 +55,7 @@ const TRIPS_QUERY = `*[_type == "trip"] | order(departureDate desc) {
 	"photos": photos[].asset->url
 }`;
 
-const TRIP_BY_SLUG_QUERY = `*[_type == "trip" && slug.current == $slug][0] {
+const TRIP_BY_SLUG_QUERY = `*[_type == "trip" && slug.current == $slug && !(_id in path("drafts.**"))][0] {
 	_id,
 	"slug": slug.current,
 	destination,
@@ -125,6 +126,19 @@ export async function getFeaturedTrip(): Promise<Trip | undefined> {
 			(a, b) => toDateOnly(a.departureDate).getTime() - toDateOnly(b.departureDate).getTime()
 		);
 	return upcoming[0];
+}
+
+export async function getUpcomingTrips(): Promise<Trip[]> {
+	if (!isSanityConfigured()) return getUpcomingTripsLocal();
+
+	const trips = await getAllTrips();
+	const today = todayDateOnly();
+
+	return trips
+		.filter((trip) => toDateOnly(trip.departureDate) > today)
+		.sort(
+			(a, b) => toDateOnly(a.departureDate).getTime() - toDateOnly(b.departureDate).getTime()
+		);
 }
 
 export async function getPastTrips(): Promise<Trip[]> {
