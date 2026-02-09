@@ -1,5 +1,6 @@
 <script lang="ts">
 	import './layout.css';
+	import BottomNav from '$lib/components/BottomNav.svelte';
 
 	let { children } = $props();
 </script>
@@ -13,11 +14,13 @@
 </svelte:head>
 
 <div class="flex min-h-dvh flex-col bg-blush">
-	<main class="mx-auto w-full max-w-lg flex-1 px-4 py-6">
+	<main class="mx-auto w-full max-w-lg flex-1 px-4 pb-24 pt-6">
 		{@render children()}
 	</main>
 
-	<footer class="py-4 text-center text-xs text-plum/30">
+	<footer class="pb-20 pt-4 text-center text-xs text-plum/30">
 		Laget med <span class="text-pink">&#9829;</span>
 	</footer>
+
+	<BottomNav />
 </div>
