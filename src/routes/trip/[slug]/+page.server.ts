@@ -1,16 +1,20 @@
 import { getTripBySlug } from '$lib/server/trips';
+import { getAllBags } from '$lib/server/bags';
 import { sanityWriteClient } from '$lib/server/sanity';
 import { error, fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 
 export const load: PageServerLoad = async ({ params }) => {
-	const trip = await getTripBySlug(params.slug);
+	const [trip, allBags] = await Promise.all([
+		getTripBySlug(params.slug),
+		getAllBags()
+	]);
 
 	if (!trip) {
 		error(404, { message: 'Trip not found' });
 	}
 
-	return { trip };
+	return { trip, allBags };
 };
 
 export const actions: Actions = {
@@ -76,5 +80,65 @@ export const actions: Actions = {
 			.commit();
 
 		return { success: true, count: imageRefs.length };
+	},
+
+	addBag: async ({ request, params }) => {
+		const trip = await getTripBySlug(params.slug);
+
+		if (!trip || !trip._id) {
+			return fail(404, { error: 'Trip not found' });
+		}
+
+		const formData = await request.formData();
+		const bagId = formData.get('bagId');
+
+		if (!bagId || typeof bagId !== 'string') {
+			return fail(400, { error: 'Ingen veske valgt' });
+		}
+
+		// Check if already added
+		const alreadyAdded = trip.selectedBags?.some((b) => b._id === bagId);
+		if (alreadyAdded) {
+			return fail(400, { error: 'Vesken er allerede lagt til' });
+		}
+
+		await sanityWriteClient
+			.patch(trip._id)
+			.setIfMissing({ selectedBags: [] })
+			.append('selectedBags', [{ _type: 'reference', _ref: bagId, _key: crypto.randomUUID().slice(0, 12) }])
+			.commit();
+
+		return { success: true };
+	},
+
+	removeBag: async ({ request, params }) => {
+		const trip = await getTripBySlug(params.slug);
+
+		if (!trip || !trip._id) {
+			return fail(404, { error: 'Trip not found' });
+		}
+
+		const formData = await request.formData();
+		const bagId = formData.get('bagId');
+
+		if (!bagId || typeof bagId !== 'string') {
+			return fail(400, { error: 'Ingen veske valgt' });
+		}
+
+		// Fetch the raw document to find the array key for this reference
+		const rawTrip = await sanityWriteClient.getDocument(trip._id);
+		const selectedBags = (rawTrip?.selectedBags ?? []) as Array<{ _key: string; _ref: string }>;
+		const entry = selectedBags.find((b) => b._ref === bagId);
+
+		if (!entry) {
+			return fail(400, { error: 'Vesken er ikke på listen' });
+		}
+
+		await sanityWriteClient
+			.patch(trip._id)
+			.unset([`selectedBags[_key=="${entry._key}"]`])
+			.commit();
+
+		return { success: true };
 	}
 };

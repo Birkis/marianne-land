@@ -1,4 +1,5 @@
 import tripsData from './trips.json';
+import type { Bag } from '$lib/data/bags';
 
 export interface Surprise {
 	id: number;
@@ -35,6 +36,7 @@ export interface Trip {
 	returnDate: string;
 	flights?: FlightInfo[];
 	surprises: Surprise[];
+	selectedBags?: Bag[];
 	photos?: string[];
 }
 

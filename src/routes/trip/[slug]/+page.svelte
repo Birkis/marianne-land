@@ -23,6 +23,17 @@
 
 	let uploading = $state(false);
 	let fileInput: HTMLInputElement | undefined = $state();
+
+	// Bag picker state
+	let showBagPicker = $state(false);
+	let addingBag = $state(false);
+	let removingBagId: string | null = $state(null);
+	let selectedBagId = $state('');
+
+	let selectedBagIds = $derived(new Set((trip.selectedBags ?? []).map((b) => b._id)));
+	let availableBags = $derived(
+		data.allBags.filter((b) => b._id && !selectedBagIds.has(b._id))
+	);
 </script>
 
 <svelte:head>
@@ -89,6 +100,159 @@
 			{#each sortedFlights as flight (flight.id)}
 				<FlightCard {flight} />
 			{/each}
+		</section>
+	{/if}
+
+	<!-- Bag picker -->
+	{#if upcoming || active}
+		<section class="space-y-4">
+			<h2 class="font-display text-xl font-bold text-plum">
+				Hvilke vesker tar du med?
+			</h2>
+
+			<!-- Currently selected bags -->
+			{#if trip.selectedBags && trip.selectedBags.length > 0}
+				<div class="space-y-2">
+					{#each trip.selectedBags as bag (bag._id)}
+						<div class="flex items-center gap-3 rounded-2xl border-2 border-pink/20 bg-white p-3 shadow-sm">
+							<div class="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-blush-dark">
+								<img
+									src="{bag.imageUrl}?w=120&h=120&fit=crop&auto=format"
+									alt={bag.name}
+									class="h-full w-full object-cover"
+								/>
+							</div>
+							<div class="min-w-0 flex-1">
+								<p class="font-display truncate text-sm font-bold text-plum">{bag.name}</p>
+								{#if bag.brand}
+									<p class="text-plum/50 truncate text-xs">{bag.brand.name}</p>
+								{/if}
+							</div>
+							<form
+								method="POST"
+								action="?/removeBag"
+								use:enhance={() => {
+									removingBagId = bag._id ?? null;
+									return async ({ update }) => {
+										await update();
+										removingBagId = null;
+									};
+								}}
+							>
+								<input type="hidden" name="bagId" value={bag._id} />
+								<button
+									type="submit"
+									disabled={removingBagId === bag._id}
+									class="rounded-full p-2 text-plum/30 transition-colors hover:bg-rose/10 hover:text-rose active:scale-90 disabled:opacity-50"
+									title="Fjern veske"
+								>
+									{#if removingBagId === bag._id}
+										<span class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-plum/30 border-t-transparent"></span>
+									{:else}
+										<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+											<path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+										</svg>
+									{/if}
+								</button>
+							</form>
+						</div>
+					{/each}
+				</div>
+			{:else}
+				<p class="text-plum/40 text-sm italic">Ingen vesker valgt ennå.</p>
+			{/if}
+
+			<!-- Add bag -->
+			{#if availableBags.length > 0}
+				{#if !showBagPicker}
+					<button
+						onclick={() => (showBagPicker = true)}
+						class="inline-flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-pink/30 bg-white/50 px-5 py-3 text-sm font-semibold text-plum/60 transition-all hover:border-pink/50 hover:bg-white hover:text-plum active:scale-[0.98]"
+					>
+						<span aria-hidden="true">👜</span>
+						Legg til veske
+					</button>
+				{:else}
+					<form
+						method="POST"
+						action="?/addBag"
+						use:enhance={() => {
+							addingBag = true;
+							return async ({ update }) => {
+								await update();
+								addingBag = false;
+								selectedBagId = '';
+								showBagPicker = false;
+							};
+						}}
+						class="flex gap-2"
+					>
+						<select
+							name="bagId"
+							bind:value={selectedBagId}
+							class="flex-1 rounded-xl border-2 border-pink/20 bg-blush px-4 py-2.5 text-sm text-plum focus:border-pink focus:ring-0"
+						>
+							<option value="">Velg veske...</option>
+							{#each availableBags as bag (bag._id)}
+								<option value={bag._id}>
+									{bag.name}{bag.brand ? ` — ${bag.brand.name}` : ''}
+								</option>
+							{/each}
+						</select>
+						<button
+							type="submit"
+							disabled={addingBag || !selectedBagId}
+							class="shrink-0 rounded-xl bg-pink px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-pink-soft active:scale-95 disabled:opacity-50"
+						>
+							{#if addingBag}
+								...
+							{:else}
+								Legg til
+							{/if}
+						</button>
+						<button
+							type="button"
+							onclick={() => { showBagPicker = false; selectedBagId = ''; }}
+							class="shrink-0 rounded-xl border-2 border-pink/20 px-3 py-2.5 text-xs font-semibold text-plum/50 transition-all hover:border-pink/40 hover:text-plum"
+						>
+							Avbryt
+						</button>
+					</form>
+				{/if}
+			{:else if (!trip.selectedBags || trip.selectedBags.length === 0)}
+				<p class="text-plum/40 text-center text-xs">
+					Ingen vesker i samlingen ennå.
+					<a href="/vesker" class="font-semibold text-pink hover:underline">Legg til vesker</a>
+				</p>
+			{/if}
+		</section>
+	{:else if past && trip.selectedBags && trip.selectedBags.length > 0}
+		<section class="space-y-4">
+			<h2 class="font-display text-xl font-bold text-plum">
+				Vesker på turen
+			</h2>
+			<div class="space-y-2">
+				{#each trip.selectedBags as bag (bag._id)}
+					<a
+						href="/vesker/{bag._id}"
+						class="flex items-center gap-3 rounded-2xl border-2 border-pink/15 bg-white p-3 shadow-sm transition-all hover:border-pink hover:shadow-md"
+					>
+						<div class="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-blush-dark">
+							<img
+								src="{bag.imageUrl}?w=120&h=120&fit=crop&auto=format"
+								alt={bag.name}
+								class="h-full w-full object-cover"
+							/>
+						</div>
+						<div class="min-w-0 flex-1">
+							<p class="font-display truncate text-sm font-bold text-plum">{bag.name}</p>
+							{#if bag.brand}
+								<p class="text-plum/50 truncate text-xs">{bag.brand.name}</p>
+							{/if}
+						</div>
+					</a>
+				{/each}
+			</div>
 		</section>
 	{/if}
 

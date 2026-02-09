@@ -52,6 +52,7 @@ const TRIPS_QUERY = `*[_type == "trip" && !(_id in path("drafts.**"))] | order(d
 		description,
 		icon
 	},
+	"selectedBags": selectedBags[]->{_id, name, "brand": brand->{_id, name, "logoUrl": logo.asset->url}, color, "imageUrl": image.asset->url},
 	"photos": photos[].asset->url
 }`;
 
@@ -86,6 +87,7 @@ const TRIP_BY_SLUG_QUERY = `*[_type == "trip" && slug.current == $slug && !(_id 
 		description,
 		icon
 	},
+	"selectedBags": selectedBags[]->{_id, name, "brand": brand->{_id, name, "logoUrl": logo.asset->url}, color, "imageUrl": image.asset->url},
 	"photos": photos[].asset->url
 }`;
 

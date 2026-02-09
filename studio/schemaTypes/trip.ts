@@ -54,6 +54,12 @@ export const trip = defineType({
 			of: [{ type: 'surprise' }]
 		}),
 		defineField({
+			name: 'selectedBags',
+			title: 'Valgte vesker',
+			type: 'array',
+			of: [{ type: 'reference', to: [{ type: 'bag' }] }]
+		}),
+		defineField({
 			name: 'photos',
 			title: 'Bilder',
 			type: 'array',
