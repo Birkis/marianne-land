@@ -1,0 +1,138 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
+
+@theme {
+	--color-plum: #881337;
+	--color-plum-light: #9f1239;
+	--color-blush: #fdf2f8;
+	--color-blush-dark: #fce7f3;
+	--color-pink: #ec4899;
+	--color-pink-light: #fbcfe8;
+	--color-pink-soft: #f9a8d4;
+	--color-rose: #e11d48;
+	--font-display: 'Georgia', 'Times New Roman', serif;
+}
+
+/* Base styles */
+html {
+	background-color: var(--color-blush);
+	color: var(--color-plum);
+	font-family:
+		system-ui,
+		-apple-system,
+		'Segoe UI',
+		Roboto,
+		sans-serif;
+}
+
+/* Smooth scrolling */
+html {
+	scroll-behavior: smooth;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+/* Countdown digit flip animation */
+@keyframes digit-flip {
+	0% {
+		transform: rotateX(0deg);
+	}
+	50% {
+		transform: rotateX(-90deg);
+	}
+	100% {
+		transform: rotateX(0deg);
+	}
+}
+
+.animate-digit-flip {
+	animation: digit-flip 0.6s ease-in-out;
+}
+
+/* Card flip */
+.perspective {
+	perspective: 1000px;
+}
+
+.flip-card-inner {
+	transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+	transform-style: preserve-3d;
+}
+
+.flip-card-inner.flipped {
+	transform: rotateY(180deg);
+}
+
+.flip-card-front,
+.flip-card-back {
+	backface-visibility: hidden;
+}
+
+.flip-card-back {
+	transform: rotateY(180deg);
+}
+
+/* Confetti */
+@keyframes confetti-fall {
+	0% {
+		transform: translateY(0) rotate(0deg);
+		opacity: 1;
+	}
+	100% {
+		transform: translateY(120px) rotate(720deg);
+		opacity: 0;
+	}
+}
+
+.confetti-piece {
+	animation: confetti-fall 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Pulse glow for active day */
+@keyframes pulse-glow {
+	0%,
+	100% {
+		box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.4);
+	}
+	50% {
+		box-shadow: 0 0 0 8px rgba(236, 72, 153, 0);
+	}
+}
+
+.animate-pulse-glow {
+	animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Gentle float animation for hero */
+@keyframes float {
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-6px);
+	}
+}
+
+.animate-float {
+	animation: float 3s ease-in-out infinite;
+}
+
+/* Lock shake */
+@keyframes shake {
+	0%,
+	100% {
+		transform: translateX(0);
+	}
+	25% {
+		transform: translateX(-4px);
+	}
+	75% {
+		transform: translateX(4px);
+	}
+}
+
+.animate-shake {
+	animation: shake 0.3s ease-in-out;
+}

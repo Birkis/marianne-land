@@ -1,0 +1,46 @@
+{
+	"trips": [
+		{
+			"slug": "london-feb-2026",
+			"destination": "London",
+			"emoji": "🇬🇧",
+			"tagline": "En helg i storbyen",
+			"departureDate": "2026-02-27",
+			"returnDate": "2026-03-01",
+			"surprises": [
+				{
+					"id": 1,
+					"unlockDate": "2026-02-27",
+					"type": "activity",
+					"title": "West End-show",
+					"description": "Vi skal se Hamilton i kveld! 🎭",
+					"icon": "🎭"
+				},
+				{
+					"id": 2,
+					"unlockDate": "2026-02-27",
+					"type": "restaurant",
+					"title": "Middag på Dishoom",
+					"description": "Det stedet du har hatt lyst til å prøve — Bombay comfort food midt i London.",
+					"icon": "🍽️"
+				},
+				{
+					"id": 3,
+					"unlockDate": "2026-02-28",
+					"type": "activity",
+					"title": "Borough Market",
+					"description": "En morgen der vi smaker på alt vi kommer over.",
+					"icon": "🧁"
+				},
+				{
+					"id": 4,
+					"unlockDate": "2026-02-28",
+					"type": "surprise",
+					"title": "En liten overraskelse",
+					"description": "Du får bare vente og se... 💛",
+					"icon": "🎁"
+				}
+			]
+		}
+	]
+}
