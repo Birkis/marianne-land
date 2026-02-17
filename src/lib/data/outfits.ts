@@ -24,6 +24,7 @@ export interface Garment {
 	name: string;
 	zone: GarmentZone;
 	imageUrl: string;
+	overlayUrl?: string;
 	color?: string;
 	tags?: string[];
 	notes?: string;

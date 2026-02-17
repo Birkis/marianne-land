@@ -19,6 +19,25 @@
 
 	const zones: GarmentZone[] = ['hodeplagg', 'overdel', 'underdel', 'sko', 'tilbehor'];
 
+	type ZoneLayout = {
+		top: number;
+		left: number;
+		width: number;
+		height: number;
+		zIndex: number;
+		hotspotTop?: number;
+		hotspotLeft?: number;
+	};
+
+	// Percent-based layout tuned for `static/marianne_outfit_base.png` (9:16).
+	const zoneLayout: Record<GarmentZone, ZoneLayout> = {
+		hodeplagg: { top: 2, left: 22, width: 56, height: 22, zIndex: 40, hotspotTop: 6, hotspotLeft: 74 },
+		overdel: { top: 18, left: 18, width: 64, height: 30, zIndex: 30, hotspotTop: 22, hotspotLeft: 80 },
+		underdel: { top: 44, left: 18, width: 64, height: 30, zIndex: 20, hotspotTop: 50, hotspotLeft: 80 },
+		sko: { top: 80, left: 18, width: 64, height: 18, zIndex: 10, hotspotTop: 84, hotspotLeft: 70 },
+		tilbehor: { top: 14, left: 4, width: 20, height: 70, zIndex: 50, hotspotTop: 18, hotspotLeft: 12 }
+	};
+
 	function initialFromProps() {
 		return {
 			name: initialName ?? '',
@@ -62,6 +81,10 @@
 		if (!id) return undefined;
 		return garments.find((g) => g._id === id);
 	}
+
+	function garmentImageForLayer(garment: Garment) {
+		return garment.overlayUrl || garment.imageUrl;
+	}
 </script>
 
 <form method="POST" action={formAction} class="space-y-6">
@@ -76,6 +99,54 @@
 			placeholder="F.eks. Middag i byen"
 			class="w-full rounded-xl border-2 border-pink/20 bg-blush px-4 py-2.5 text-sm text-plum placeholder:text-plum/30 focus:border-pink focus:ring-0"
 		/>
+	</section>
+
+	<section class="rounded-3xl border-2 border-pink/20 bg-white p-4 shadow-sm">
+		<h2 class="text-plum/50 mb-3 text-xs font-semibold uppercase tracking-wider">Figur</h2>
+
+		<div class="mx-auto w-full max-w-[340px]">
+			<div class="relative w-full overflow-hidden rounded-3xl bg-blush" style="aspect-ratio: 9 / 16;">
+				<img
+					src="/marianne_outfit_base.png"
+					alt="Figur"
+					class="absolute inset-0 h-full w-full object-contain"
+				/>
+
+				{#each zones as zone (zone)}
+					{@const layout = zoneLayout[zone]}
+					{@const chosen = garmentById(selected[zone])}
+
+					{#if chosen}
+						<img
+							src="{garmentImageForLayer(chosen)}?auto=format"
+							alt={chosen.name}
+							class="absolute object-contain pointer-events-none"
+							style="
+								top: {layout.top}%;
+								left: {layout.left}%;
+								width: {layout.width}%;
+								height: {layout.height}%;
+								z-index: {layout.zIndex};
+							"
+						/>
+					{/if}
+
+					<button
+						type="button"
+						class="absolute z-60 inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-pink/30 bg-white/90 text-sm font-bold text-plum shadow-sm transition-all hover:border-pink/50 hover:bg-white active:scale-95"
+						style="
+							top: {(layout.hotspotTop ?? layout.top)}%;
+							left: {(layout.hotspotLeft ?? layout.left)}%;
+							transform: translate(-50%, -50%);
+						"
+						aria-label="{chosen ? 'Bytt' : 'Velg'} {zone}"
+						onclick={() => openPicker(zone)}
+					>
+						{chosen ? '✎' : '+'}
+					</button>
+				{/each}
+			</div>
+		</div>
 	</section>
 
 	<section class="space-y-3">

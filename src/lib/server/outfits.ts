@@ -11,6 +11,7 @@ const GARMENT_PROJECTION = `{
 	name,
 	zone,
 	"imageUrl": image.asset->url,
+	"overlayUrl": overlay.asset->url,
 	color,
 	tags,
 	notes

@@ -34,6 +34,12 @@ export const garment = defineType({
 			validation: (rule) => rule.required()
 		}),
 		defineField({
+			name: 'overlay',
+			title: 'Overlay (transparent)',
+			type: 'image',
+			options: { hotspot: true }
+		}),
+		defineField({
 			name: 'color',
 			title: 'Farge',
 			type: 'string'

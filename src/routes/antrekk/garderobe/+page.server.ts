@@ -3,6 +3,8 @@ import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import type { GarmentZone } from '$lib/data/outfits';
 
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+
 export const load: PageServerLoad = async () => {
 	const garments = await getAllGarments();
 	return { garments };
@@ -33,6 +35,10 @@ export const actions: Actions = {
 
 		if (!(imageFile instanceof File) || !imageFile.type.startsWith('image/') || imageFile.size === 0) {
 			return fail(400, { error: 'Du må legge til et bilde av plagget' });
+		}
+
+		if (imageFile.size > MAX_IMAGE_BYTES) {
+			return fail(400, { error: 'Bildet er for stort. Prøv et mindre bilde (maks 10MB).' });
 		}
 
 		try {

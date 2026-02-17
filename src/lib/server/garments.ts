@@ -1,6 +1,7 @@
 import { sanityClient, sanityWriteClient } from './sanity';
 import { getAllGarments as getAllGarmentsLocal } from '$lib/data/outfits';
 import type { Garment, GarmentZone } from '$lib/data/outfits';
+import { removeBackground } from '@imgly/background-removal-node';
 
 function isSanityConfigured(): boolean {
 	return !!sanityClient;
@@ -11,6 +12,7 @@ const GARMENT_PROJECTION = `{
 	name,
 	zone,
 	"imageUrl": image.asset->url,
+	"overlayUrl": overlay.asset->url,
 	color,
 	tags,
 	notes
@@ -53,6 +55,29 @@ export async function createGarment(data: {
 		contentType: data.imageContentType
 	});
 
+	let overlayAsset:
+		| {
+				_id: string;
+				url: string;
+		  }
+		| undefined;
+
+	try {
+		const overlayBlob = await removeBackground(data.imageBuffer, {
+			model: 'medium',
+			output: { format: 'image/png', quality: 0.9 }
+		});
+		const overlayBuffer = Buffer.from(await overlayBlob.arrayBuffer());
+
+		overlayAsset = await sanityWriteClient.assets.upload('image', overlayBuffer, {
+			filename: `${stripExt(data.imageFilename)}-overlay.png`,
+			contentType: 'image/png'
+		});
+	} catch (err) {
+		// Best-effort: overlay is optional; keep the original photo.
+		console.warn('Background removal failed; creating garment without overlay:', err);
+	}
+
 	const doc = await sanityWriteClient.create({
 		_type: 'garment',
 		name: data.name,
@@ -66,7 +91,16 @@ export async function createGarment(data: {
 				_type: 'reference',
 				_ref: asset._id
 			}
-		}
+		},
+		overlay: overlayAsset
+			? {
+					_type: 'image',
+					asset: {
+						_type: 'reference',
+						_ref: overlayAsset._id
+					}
+				}
+			: undefined
 	});
 
 	return {
@@ -74,6 +108,7 @@ export async function createGarment(data: {
 		name: data.name,
 		zone: data.zone,
 		imageUrl: asset.url,
+		overlayUrl: overlayAsset?.url,
 		color: data.color,
 		tags: data.tags,
 		notes: data.notes
@@ -85,5 +120,10 @@ export async function deleteGarment(id: string): Promise<void> {
 		throw new Error('Sanity is not configured');
 	}
 	await sanityWriteClient.delete(id);
+}
+
+function stripExt(filename: string): string {
+	const dot = filename.lastIndexOf('.');
+	return dot > 0 ? filename.slice(0, dot) : filename;
 }
 
