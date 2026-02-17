@@ -9,8 +9,8 @@
 	<meta name="theme-color" content="#881337" />
 	<meta name="apple-mobile-web-app-capable" content="yes" />
 	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-	<link rel="icon" type="image/png" href="/app-icon-512.png" />
-	<link rel="apple-touch-icon" href="/app-icon-180.png" />
+	<link rel="icon" type="image/jpeg" href="/marianneland-icon_leather.jpg" />
+	<link rel="apple-touch-icon" href="/marianneland-icon_leather.jpg" />
 </svelte:head>
 
 <div class="flex min-h-dvh flex-col bg-blush">

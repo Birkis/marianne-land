@@ -8,6 +8,11 @@
 	"theme_color": "#881337",
 	"icons": [
 		{
+			"src": "/marianneland-icon_leather.jpg",
+			"sizes": "any",
+			"type": "image/jpeg"
+		},
+		{
 			"src": "/app-icon-180.png",
 			"sizes": "180x180",
 			"type": "image/png"
