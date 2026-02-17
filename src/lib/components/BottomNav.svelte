@@ -5,6 +5,7 @@
 
 	const tabs = [
 		{ href: '/', label: 'Eventyr', icon: '✈️', match: (p: string) => p === '/' || p.startsWith('/trip') },
+		{ href: '/antrekk', label: 'Antrekk', icon: '👗', match: (p: string) => p.startsWith('/antrekk') },
 		{ href: '/vesker', label: 'Vesker', icon: '👜', match: (p: string) => p.startsWith('/vesker') }
 	] as const;
 </script>
