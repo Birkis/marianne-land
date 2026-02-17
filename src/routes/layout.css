@@ -31,6 +31,7 @@ html {
 	scroll-behavior: smooth;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+	overscroll-behavior-y: contain;
 }
 
 /* Countdown digit flip animation */
