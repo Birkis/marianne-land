@@ -1,7 +1,6 @@
 import { sanityClient, sanityWriteClient } from './sanity';
 import { getAllGarments as getAllGarmentsLocal } from '$lib/data/outfits';
 import type { Garment, GarmentZone } from '$lib/data/outfits';
-import { removeBackground } from '@imgly/background-removal-node';
 
 function isSanityConfigured(): boolean {
 	return !!sanityClient;
@@ -45,6 +44,9 @@ export async function createGarment(data: {
 	imageBuffer: Buffer;
 	imageFilename: string;
 	imageContentType: string;
+	overlayBuffer?: Buffer;
+	overlayFilename?: string;
+	overlayContentType?: string;
 }): Promise<Garment> {
 	if (!sanityWriteClient) {
 		throw new Error('Sanity is not configured');
@@ -55,28 +57,15 @@ export async function createGarment(data: {
 		contentType: data.imageContentType
 	});
 
-	let overlayAsset:
-		| {
-				_id: string;
-				url: string;
-		  }
-		| undefined;
-
-	try {
-		const overlayBlob = await removeBackground(data.imageBuffer, {
-			model: 'medium',
-			output: { format: 'image/png', quality: 0.9 }
-		});
-		const overlayBuffer = Buffer.from(await overlayBlob.arrayBuffer());
-
-		overlayAsset = await sanityWriteClient.assets.upload('image', overlayBuffer, {
-			filename: `${stripExt(data.imageFilename)}-overlay.png`,
-			contentType: 'image/png'
-		});
-	} catch (err) {
-		// Best-effort: overlay is optional; keep the original photo.
-		console.warn('Background removal failed; creating garment without overlay:', err);
-	}
+	const overlayAsset =
+		data.overlayBuffer && data.overlayBuffer.length > 0
+			? await sanityWriteClient.assets.upload('image', data.overlayBuffer, {
+					filename:
+						data.overlayFilename?.trim() ||
+						`${stripExt(data.imageFilename)}-overlay${guessExt(data.overlayContentType)}`,
+					contentType: data.overlayContentType || 'image/png'
+				})
+			: undefined;
 
 	const doc = await sanityWriteClient.create({
 		_type: 'garment',
@@ -125,5 +114,11 @@ export async function deleteGarment(id: string): Promise<void> {
 function stripExt(filename: string): string {
 	const dot = filename.lastIndexOf('.');
 	return dot > 0 ? filename.slice(0, dot) : filename;
+}
+
+function guessExt(contentType: string | undefined): string {
+	if (contentType === 'image/webp') return '.webp';
+	if (contentType === 'image/jpeg') return '.jpg';
+	return '.png';
 }
 

@@ -32,7 +32,6 @@
 		"vite-plugin-devtools-json": "^1.0.0"
 	},
 	"dependencies": {
-		"@imgly/background-removal-node": "^1.4.5",
 		"@sanity/client": "^7.14.1"
 	}
 }

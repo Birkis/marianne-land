@@ -24,6 +24,7 @@ export const actions: Actions = {
 		const tags = formData.getAll('tags');
 		const notes = formData.get('notes');
 		const imageFile = formData.get('image');
+	const overlayFile = formData.get('overlay');
 
 		if (!name || typeof name !== 'string' || !name.trim()) {
 			return fail(400, { error: 'Plagget trenger et navn' });
@@ -41,8 +42,25 @@ export const actions: Actions = {
 			return fail(400, { error: 'Bildet er for stort. Prøv et mindre bilde (maks 10MB).' });
 		}
 
+		if (overlayFile instanceof File && overlayFile.size > MAX_IMAGE_BYTES) {
+			return fail(400, { error: 'Overlay-bildet er for stort. Prøv et mindre bilde (maks 10MB).' });
+		}
+
 		try {
 			const buffer = Buffer.from(await imageFile.arrayBuffer());
+
+			let overlayBuffer: Buffer | undefined;
+			let overlayFilename: string | undefined;
+			let overlayContentType: string | undefined;
+
+			if (overlayFile instanceof File && overlayFile.size > 0) {
+				if (overlayFile.type !== 'image/png') {
+					return fail(400, { error: 'Overlay må være en PNG med transparent bakgrunn.' });
+				}
+				overlayBuffer = Buffer.from(await overlayFile.arrayBuffer());
+				overlayFilename = overlayFile.name;
+				overlayContentType = overlayFile.type;
+			}
 
 			await createGarment({
 				name: name.trim(),
@@ -52,7 +70,10 @@ export const actions: Actions = {
 				notes: typeof notes === 'string' ? notes.trim() : undefined,
 				imageBuffer: buffer,
 				imageFilename: imageFile.name,
-				imageContentType: imageFile.type
+				imageContentType: imageFile.type,
+				overlayBuffer,
+				overlayFilename,
+				overlayContentType
 			});
 
 			return { success: true };

@@ -94,6 +94,24 @@
 				</div>
 
 				<div>
+					<label for="garment-overlay" class="text-plum/70 mb-1 block text-sm font-medium">
+						Overlay (PNG, valgfri)
+					</label>
+					<p class="text-plum/50 mb-2 text-xs">
+						Last opp en PNG med transparent bakgrunn for best resultat på figuren.
+					</p>
+					{#key fileInputKey}
+						<input
+							type="file"
+							name="overlay"
+							id="garment-overlay"
+							accept="image/png"
+							class="block w-full text-sm text-plum/60 file:mr-3 file:rounded-full file:border-0 file:bg-pink/10 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-plum hover:file:bg-pink/20"
+						/>
+					{/key}
+				</div>
+
+				<div>
 					<label for="garment-name" class="text-plum/70 mb-1 block text-sm font-medium">Navn *</label>
 					<input
 						type="text"
