@@ -2,11 +2,7 @@ import { sanityClient, sanityWriteClient } from './sanity';
 import type { Brand } from '$lib/data/bags';
 
 function isSanityConfigured(): boolean {
-	try {
-		return !!sanityClient.config().projectId;
-	} catch {
-		return false;
-	}
+	return !!sanityClient;
 }
 
 const ALL_BRANDS_QUERY = `*[_type == "brand"] | order(name asc) {
@@ -18,11 +14,15 @@ const ALL_BRANDS_QUERY = `*[_type == "brand"] | order(name asc) {
 export async function getAllBrands(): Promise<Brand[]> {
 	if (!isSanityConfigured()) return [];
 
-	const brands = await sanityClient.fetch<Brand[]>(ALL_BRANDS_QUERY);
+	const brands = await sanityClient!.fetch<Brand[]>(ALL_BRANDS_QUERY);
 	return brands ?? [];
 }
 
 export async function createBrand(name: string): Promise<Brand> {
+	if (!sanityWriteClient) {
+		throw new Error('Sanity is not configured');
+	}
+
 	const doc = await sanityWriteClient.create({
 		_type: 'brand',
 		name: name.trim()

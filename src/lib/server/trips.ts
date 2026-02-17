@@ -13,11 +13,7 @@ import type { Trip } from '$lib/data/trips';
  * Falls back to static JSON data when Sanity isn't set up.
  */
 function isSanityConfigured(): boolean {
-	try {
-		return !!sanityClient.config().projectId;
-	} catch {
-		return false;
-	}
+	return !!sanityClient;
 }
 
 // --- GROQ queries ---
@@ -96,14 +92,14 @@ const TRIP_BY_SLUG_QUERY = `*[_type == "trip" && slug.current == $slug && !(_id 
 export async function getAllTrips(): Promise<Trip[]> {
 	if (!isSanityConfigured()) return getAllTripsLocal();
 
-	const trips = await sanityClient.fetch<Trip[]>(TRIPS_QUERY);
+	const trips = await sanityClient!.fetch<Trip[]>(TRIPS_QUERY);
 	return trips ?? [];
 }
 
 export async function getTripBySlug(slug: string): Promise<Trip | undefined> {
 	if (!isSanityConfigured()) return getTripBySlugLocal(slug);
 
-	const trip = await sanityClient.fetch<Trip | null>(TRIP_BY_SLUG_QUERY, { slug });
+	const trip = await sanityClient!.fetch<Trip | null>(TRIP_BY_SLUG_QUERY, { slug });
 	return trip ?? undefined;
 }
 
@@ -124,9 +120,7 @@ export async function getFeaturedTrip(): Promise<Trip | undefined> {
 	// Otherwise upcoming
 	const upcoming = trips
 		.filter((trip) => toDateOnly(trip.departureDate) > today)
-		.sort(
-			(a, b) => toDateOnly(a.departureDate).getTime() - toDateOnly(b.departureDate).getTime()
-		);
+		.sort((a, b) => toDateOnly(a.departureDate).getTime() - toDateOnly(b.departureDate).getTime());
 	return upcoming[0];
 }
 
@@ -138,9 +132,7 @@ export async function getUpcomingTrips(): Promise<Trip[]> {
 
 	return trips
 		.filter((trip) => toDateOnly(trip.departureDate) > today)
-		.sort(
-			(a, b) => toDateOnly(a.departureDate).getTime() - toDateOnly(b.departureDate).getTime()
-		);
+		.sort((a, b) => toDateOnly(a.departureDate).getTime() - toDateOnly(b.departureDate).getTime());
 }
 
 export async function getPastTrips(): Promise<Trip[]> {
@@ -151,9 +143,7 @@ export async function getPastTrips(): Promise<Trip[]> {
 
 	return trips
 		.filter((trip) => toDateOnly(trip.returnDate) < today)
-		.sort(
-			(a, b) => toDateOnly(b.departureDate).getTime() - toDateOnly(a.departureDate).getTime()
-		);
+		.sort((a, b) => toDateOnly(b.departureDate).getTime() - toDateOnly(a.departureDate).getTime());
 }
 
 // --- Date helpers (mirror of data/trips.ts) ---

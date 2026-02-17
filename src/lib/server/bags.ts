@@ -3,11 +3,7 @@ import { getAllBags as getAllBagsLocal } from '$lib/data/bags';
 import type { Bag } from '$lib/data/bags';
 
 function isSanityConfigured(): boolean {
-	try {
-		return !!sanityClient.config().projectId;
-	} catch {
-		return false;
-	}
+	return !!sanityClient;
 }
 
 // --- GROQ queries ---
@@ -37,14 +33,14 @@ const BAG_BY_ID_QUERY = `*[_type == "bag" && _id == $id][0] {
 export async function getAllBags(): Promise<Bag[]> {
 	if (!isSanityConfigured()) return getAllBagsLocal();
 
-	const bags = await sanityClient.fetch<Bag[]>(ALL_BAGS_QUERY);
+	const bags = await sanityClient!.fetch<Bag[]>(ALL_BAGS_QUERY);
 	return bags ?? [];
 }
 
 export async function getBagById(id: string): Promise<Bag | undefined> {
 	if (!isSanityConfigured()) return undefined;
 
-	const bag = await sanityClient.fetch<Bag | null>(BAG_BY_ID_QUERY, { id });
+	const bag = await sanityClient!.fetch<Bag | null>(BAG_BY_ID_QUERY, { id });
 	return bag ?? undefined;
 }
 
@@ -58,6 +54,10 @@ export async function createBag(data: {
 	imageFilename: string;
 	imageContentType: string;
 }): Promise<Bag> {
+	if (!sanityWriteClient) {
+		throw new Error('Sanity is not configured');
+	}
+
 	const asset = await sanityWriteClient.assets.upload('image', data.imageBuffer, {
 		filename: data.imageFilename,
 		contentType: data.imageContentType
@@ -66,9 +66,7 @@ export async function createBag(data: {
 	const doc = await sanityWriteClient.create({
 		_type: 'bag',
 		name: data.name,
-		brand: data.brandId
-			? { _type: 'reference', _ref: data.brandId }
-			: undefined,
+		brand: data.brandId ? { _type: 'reference', _ref: data.brandId } : undefined,
 		color: data.color || undefined,
 		tags: data.tags && data.tags.length > 0 ? data.tags : undefined,
 		notes: data.notes || undefined,
@@ -92,5 +90,8 @@ export async function createBag(data: {
 }
 
 export async function deleteBag(id: string): Promise<void> {
+	if (!sanityWriteClient) {
+		throw new Error('Sanity is not configured');
+	}
 	await sanityWriteClient.delete(id);
 }

@@ -5,10 +5,7 @@ import { error, fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 
 export const load: PageServerLoad = async ({ params }) => {
-	const [trip, allBags] = await Promise.all([
-		getTripBySlug(params.slug),
-		getAllBags()
-	]);
+	const [trip, allBags] = await Promise.all([getTripBySlug(params.slug), getAllBags()]);
 
 	if (!trip) {
 		error(404, { message: 'Trip not found' });
@@ -39,6 +36,10 @@ export const actions: Actions = {
 			return fail(500, { error: 'Trip mangler Sanity-ID. Er Sanity konfigurert?' });
 		}
 
+		if (!sanityWriteClient) {
+			return fail(500, { error: 'Sanity er ikke konfigurert' });
+		}
+
 		const formData = await request.formData();
 		const files = formData.getAll('photos');
 
@@ -46,7 +47,11 @@ export const actions: Actions = {
 			return fail(400, { error: 'Ingen bilder valgt' });
 		}
 
-		const imageRefs: Array<{ _type: 'image'; _key: string; asset: { _type: 'reference'; _ref: string } }> = [];
+		const imageRefs: Array<{
+			_type: 'image';
+			_key: string;
+			asset: { _type: 'reference'; _ref: string };
+		}> = [];
 
 		for (const file of files) {
 			if (!(file instanceof File) || !file.type.startsWith('image/')) {
@@ -89,6 +94,10 @@ export const actions: Actions = {
 			return fail(404, { error: 'Trip not found' });
 		}
 
+		if (!sanityWriteClient) {
+			return fail(500, { error: 'Sanity er ikke konfigurert' });
+		}
+
 		const formData = await request.formData();
 		const bagId = formData.get('bagId');
 
@@ -96,8 +105,10 @@ export const actions: Actions = {
 			return fail(400, { error: 'Ingen veske valgt' });
 		}
 
-		// Check if already added
-		const alreadyAdded = trip.selectedBags?.some((b) => b._id === bagId);
+		// Check if already added (use write client to avoid CDN staleness)
+		const rawTrip = await sanityWriteClient.getDocument(trip._id);
+		const selectedBags = (rawTrip?.selectedBags ?? []) as Array<{ _ref: string }>;
+		const alreadyAdded = selectedBags.some((b) => b._ref === bagId);
 		if (alreadyAdded) {
 			return fail(400, { error: 'Vesken er allerede lagt til' });
 		}
@@ -105,7 +116,9 @@ export const actions: Actions = {
 		await sanityWriteClient
 			.patch(trip._id)
 			.setIfMissing({ selectedBags: [] })
-			.append('selectedBags', [{ _type: 'reference', _ref: bagId, _key: crypto.randomUUID().slice(0, 12) }])
+			.append('selectedBags', [
+				{ _type: 'reference', _ref: bagId, _key: crypto.randomUUID().slice(0, 12) }
+			])
 			.commit();
 
 		return { success: true };
@@ -116,6 +129,10 @@ export const actions: Actions = {
 
 		if (!trip || !trip._id) {
 			return fail(404, { error: 'Trip not found' });
+		}
+
+		if (!sanityWriteClient) {
+			return fail(500, { error: 'Sanity er ikke konfigurert' });
 		}
 
 		const formData = await request.formData();
